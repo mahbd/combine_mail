@@ -1,14 +1,14 @@
 import { Outlet } from "react-router-dom";
 import ScrollTop from "../components/ScrollTop";
 import "@radix-ui/themes/styles.css";
-import { Suspense } from "react";
+import { Box } from "@radix-ui/themes";
 
 const AuthLayout = () => {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Box>
       <ScrollTop />
       <Outlet />
-    </Suspense>
+    </Box>
   );
 };
 

@@ -22,6 +22,20 @@ const router = createBrowserRouter([
           return { Component: Editor };
         },
       },
+      {
+        path: "sent-mail",
+        lazy: async () => {
+          let { default: Sent } = await import("../pages/Sent");
+          return { Component: Sent };
+        },
+      },
+      {
+        path: "new-mail",
+        lazy: async () => {
+          let { default: New } = await import("../pages/New");
+          return { Component: New };
+        },
+      },
     ],
   },
   {
