@@ -8,5 +8,10 @@ export const baseAPI = getApiURL();
 // export const baseAPI = "https://beta.tsp.com.bd";
 
 export const sURL = {
-  login: `${baseAPI}/users/login`,
+  login: `${baseAPI}/users/token/`,
+  register: `${baseAPI}/users/register/`,
+  changePassword: `${baseAPI}/users/change-password/`,
+  resetPassword: `${baseAPI}/users/reset-password/`,
+  refreshToken: `${baseAPI}/users/token/refresh/`,
+  verifyToken: `${baseAPI}/users/token/verify/`,
 };

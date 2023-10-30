@@ -1,4 +1,4 @@
-import { Box, Flex } from "@radix-ui/themes";
+import { Box, Button, Flex } from "@radix-ui/themes";
 import Link from "./Link";
 
 const Navbar = () => {
@@ -20,9 +20,24 @@ const Navbar = () => {
           </Link>
         </Flex>
         <Flex>
-          <Link href="/logout" color="white">
-            Logout
-          </Link>
+          {localStorage.getItem("access") == null ? (
+            <Link href="/auth/login" color="white">
+              Logout
+            </Link>
+          ) : (
+            <Button
+              size={"1"}
+              color="red"
+              onClick={() => {
+                localStorage.removeItem("access");
+                localStorage.removeItem("refresh");
+                // @ts-ignore
+                window.location = "/auth/login";
+              }}
+            >
+              Logout
+            </Button>
+          )}
         </Flex>
       </Flex>
     </Box>

@@ -6,12 +6,10 @@ import InputError from "../components/InputError";
 import http from "../services/http";
 import { sURL } from "../c";
 import PasswordField from "./PasswordField";
+import { useEffect, useState } from "react";
+import Loading from "../components/Loading";
 
 const schema = z.object({
-  old_password: z
-    .string()
-    .min(4, "Password must be at least 4 characters")
-    .max(32, "Password must be at most 32 characters"),
   new_password: z
     .string()
     .min(4, "Password must be at least 4 characters")
@@ -21,23 +19,30 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const ChangePassword = () => {
+  useEffect(() => {
+    if (!localStorage.getItem("access")) {
+      window.location.replace("/auth/login?next=" + window.location.pathname);
+    }
+  }, []);
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = (data: FormData) => {
+    setIsSubmitting(true);
     http
-      .post(sURL.login, data)
-      .then((res) => {
-        localStorage.setItem("access", res.data.access);
-        localStorage.setItem("refresh", res.data.refresh);
+      .post(sURL.changePassword, data)
+      .then(() => {
+        alert("Password changed successfully");
         // @ts-ignore
-        window.location = "/restricted/dashboard";
+        window.location = "/";
       })
       .catch((err) => {
         if (err.response && err.response.status == 400) {
@@ -52,31 +57,25 @@ const ChangePassword = () => {
   };
 
   return (
-    <Flex justify={"center"}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Flex direction={"column"} gap={"2"} style={{ width: "360px" }}>
-          <Heading align={"center"}>Change Password</Heading>
-          <Box>
-            <Text>Old Password</Text>
-            <PasswordField
-              register={register("old_password")}
-              id="old_password"
-            />
-            <InputError error={errors.old_password} />
-          </Box>
-          <Box>
-            <Text>New Password</Text>
-            <PasswordField
-              register={register("new_password")}
-              id="new_password"
-            />
-            <InputError error={errors.new_password} />
-          </Box>
-          <Button type="submit" disabled={isSubmitting}>
-            Send Link
-          </Button>
-        </Flex>
-      </form>
+    <Flex direction={"column"} justify={"center"} style={{ minHeight: "70vh" }}>
+      <Flex justify={"center"}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Flex direction={"column"} gap={"2"} style={{ width: "360px" }}>
+            <Heading align={"center"}>Change Password</Heading>
+            <Box>
+              <Text>New Password</Text>
+              <PasswordField
+                register={register("new_password")}
+                id="new_password"
+              />
+              <InputError error={errors.new_password} />
+            </Box>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loading /> : " Change Password"}
+            </Button>
+          </Flex>
+        </form>
+      </Flex>
     </Flex>
   );
 };

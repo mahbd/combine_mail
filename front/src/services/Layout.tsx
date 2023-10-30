@@ -6,11 +6,11 @@ import { useEffect } from "react";
 import { Box, Container } from "@radix-ui/themes";
 
 const Layout = () => {
-  // useEffect(() => {
-  //   if (!localStorage.getItem("access")) {
-  //     window.location.replace("/auth/login");
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (!localStorage.getItem("access")) {
+      window.location.replace("/auth/login?next=" + window.location.pathname);
+    }
+  }, []);
 
   return (
     <Container>

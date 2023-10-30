@@ -11,15 +11,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from combine_mail.helpers import create_log
-from core.models import ReceiverMail, Email
+from core.models import ReceiverMail, SendibleMail
 from users.models import User
 
 
 def send_email_celery(receiver_mail):
-    mail = receiver_mail.email
-    if mail.burst_mode == Email.BURST_MODE_SERIAL:
+    mail = receiver_mail.sendible_mail
+    if mail.burst_mode == SendibleMail.BURST_MODE_SERIAL:
         sender_mail = mail.user.sendermail_set.first()
-    elif mail.burst_mode == Email.BURST_MODE_DISTRIBUTE:
+    elif mail.burst_mode == SendibleMail.BURST_MODE_DISTRIBUTE:
         mail_count = mail.user.sendermail_set.filter(last_expired__gt=timezone.now()).count()
         if mail_count == 0:
             return False
@@ -30,8 +30,8 @@ def send_email_celery(receiver_mail):
     if not sender_mail:
         return False
     try:
-        send_mail(recipient_list=[receiver_mail.email], from_email=sender_mail.email,
-                  auth_user=sender_mail.email, auth_password=sender_mail.password,
+        send_mail(recipient_list=[receiver_mail.sendible_mail], from_email=sender_mail.sendible_mail,
+                  auth_user=sender_mail.sendible_mail, auth_password=sender_mail.password,
                   subject=mail.subject, html_message=mail.body, message=mail.body)
         receiver_mail.sent_time = timezone.now()
         receiver_mail.save()
@@ -74,7 +74,7 @@ def send_mass_mail(request: Request):
     if not subject or not body or not burst_mode or not emails or not delay:
         print(subject, body, burst_mode, emails)
         return Response(status=400, data={'message': 'Invalid data'})
-    main_email = Email()
+    main_email = SendibleMail()
     main_email.user = request.user
     main_email.subject = subject
     main_email.body = body
@@ -83,7 +83,7 @@ def send_mass_mail(request: Request):
     bulk_create = []
     for email in emails:
         receiver_mail = ReceiverMail()
-        receiver_mail.email = main_email
+        receiver_mail.sendible_mail = main_email
         receiver_mail.email_address = email
         bulk_create.append(receiver_mail)
 

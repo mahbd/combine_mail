@@ -3,7 +3,7 @@ from django.db import models
 from users.models import User
 
 
-class SenderMail(models.Model):
+class SenderMailAddress(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     email = models.EmailField()
     password = models.CharField(max_length=255)
@@ -14,7 +14,7 @@ class SenderMail(models.Model):
         return self.email
 
 
-class Email(models.Model):
+class SendibleMail(models.Model):
     BURST_MODE_SERIAL = 'serial'
     BURST_MODE_DISTRIBUTE = 'distribute'
     BURST_MODE_RANDOM = 'random'
@@ -32,11 +32,22 @@ class Email(models.Model):
 
 
 class ReceiverMail(models.Model):
-    email = models.ForeignKey(Email, on_delete=models.CASCADE)
+    MAIL_STATUS_PENDING = 'pending'
+    MAIL_STATUS_SENT = 'sent'
+    MAIL_STATUS_DELIVERED = 'delivered'
+    MAIL_STATUS_FAILED = 'failed'
+
+    MAIL_STATUS_CHOICES = (
+        (MAIL_STATUS_PENDING, 'Pending'),
+        (MAIL_STATUS_SENT, 'Sent'),
+        (MAIL_STATUS_DELIVERED, 'Delivered'),
+        (MAIL_STATUS_FAILED, 'Failed'),
+    )
+
+    sendible_mail = models.ForeignKey(SendibleMail, on_delete=models.CASCADE)
     email_address = models.EmailField()
     sent_time = models.DateTimeField(null=True, blank=True)
-    is_sending = models.BooleanField(default=False)
-    is_delivered = models.BooleanField(default=False)
+    status = models.CharField(max_length=255, choices=MAIL_STATUS_CHOICES, default=MAIL_STATUS_PENDING)
 
     def __str__(self):
         return self.email_address
