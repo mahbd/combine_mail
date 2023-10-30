@@ -1,17 +1,18 @@
-from math import ceil
 from smtplib import SMTPDataError
 
 from celery import shared_task
 from django.core.mail import send_mail
 from django.utils import timezone
 from django_celery_beat.models import PeriodicTask, IntervalSchedule
+from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from combine_mail.helpers import create_log
-from core.models import ReceiverMail, SendibleMail
+from core.models import ReceiverMail, SendibleMail, SenderMailAddress
+from core.serializers import SenderMailAddressSerializer
 from users.models import User
 
 
@@ -97,3 +98,12 @@ def send_mass_mail(request: Request):
     periodic_task.save()
 
     return Response(status=200, data={'message': 'Emails are being sent'})
+
+
+class SenderMailViewSet(viewsets.ModelViewSet):
+    serializer_class = SenderMailAddressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return SenderMailAddress.objects.filter(user=user)

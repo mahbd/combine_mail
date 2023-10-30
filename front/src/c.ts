@@ -5,7 +5,6 @@ const getApiURL = () => {
   return window.location.origin;
 };
 export const baseAPI = getApiURL();
-// export const baseAPI = "https://beta.tsp.com.bd";
 
 export const sURL = {
   login: `${baseAPI}/users/token/`,
@@ -14,4 +13,6 @@ export const sURL = {
   resetPassword: `${baseAPI}/users/reset-password/`,
   refreshToken: `${baseAPI}/users/token/refresh/`,
   verifyToken: `${baseAPI}/users/token/verify/`,
+
+  senderMail: `${baseAPI}/core/sender-mail/`,
 };

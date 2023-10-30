@@ -37,12 +37,10 @@ const NewSenderEmail = () => {
 
   const onSubmit = (data: FormData) => {
     http
-      .post(sURL.login, data)
-      .then((res) => {
-        localStorage.setItem("access", res.data.access);
-        localStorage.setItem("refresh", res.data.refresh);
+      .post(sURL.senderMail, data)
+      .then(() => {
         // @ts-ignore
-        window.location = "/restricted/dashboard";
+        window.location = "/";
       })
       .catch((err) => {
         if (err.response && err.response.status == 400) {
@@ -69,7 +67,7 @@ const NewSenderEmail = () => {
             <InputError error={errors.email} />
           </Box>
           <Box>
-            <Text>Password</Text>
+            <Text>App Password</Text>
             <PasswordField register={register("password")} id="app-password" />
             <InputError error={errors.password} />
           </Box>
