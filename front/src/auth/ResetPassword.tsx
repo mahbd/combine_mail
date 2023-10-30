@@ -1,14 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Flex, Heading, Box, Button, Text } from "@radix-ui/themes";
-import { useForm } from "react-hook-form";
-import z from "zod";
-import InputError from "../components/InputError";
-import http from "../services/http";
-import { sURL } from "../c";
-import PasswordField from "./PasswordField";
-import Loading from "../components/Loading";
+import { Box, Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
+import z from "zod";
+import { sURL } from "../c";
+import InputError from "../components/InputError";
+import Loading from "../components/Loading";
+import http from "../services/http";
+import PasswordField from "./PasswordField";
 
 const schema = z.object({
   new_password: z

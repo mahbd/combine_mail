@@ -1,4 +1,4 @@
-import { Box, Card, Flex, Grid, Heading } from "@radix-ui/themes";
+import { Box, Grid } from "@radix-ui/themes";
 import NewSenderEmail from "./home-components/NewSenderEmail";
 import Stats from "./home-components/Stats";
 import Last5Mail from "./home-components/Last5Mail";

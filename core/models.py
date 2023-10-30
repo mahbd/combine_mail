@@ -34,20 +34,26 @@ class SendibleMail(models.Model):
 class ReceiverMail(models.Model):
     MAIL_STATUS_PENDING = 'pending'
     MAIL_STATUS_SENT = 'sent'
+    MAIL_STATUS_SENDING = 'sending'
     MAIL_STATUS_DELIVERED = 'delivered'
     MAIL_STATUS_FAILED = 'failed'
 
     MAIL_STATUS_CHOICES = (
         (MAIL_STATUS_PENDING, 'Pending'),
         (MAIL_STATUS_SENT, 'Sent'),
+        (MAIL_STATUS_SENDING, 'Sending'),
         (MAIL_STATUS_DELIVERED, 'Delivered'),
         (MAIL_STATUS_FAILED, 'Failed'),
     )
 
     sendible_mail = models.ForeignKey(SendibleMail, on_delete=models.CASCADE)
+    from_email = models.EmailField(blank=True, null=True)
     email_address = models.EmailField()
     sent_time = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=255, choices=MAIL_STATUS_CHOICES, default=MAIL_STATUS_PENDING)
 
     def __str__(self):
         return self.email_address
+
+    class Meta:
+        ordering = ['-id']

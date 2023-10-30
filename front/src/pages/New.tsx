@@ -1,37 +1,82 @@
-import { Box, Button, Flex, Grid, TextArea, TextField } from "@radix-ui/themes";
-import axios from "axios";
+import {
+  Box,
+  Button,
+  Flex,
+  Grid,
+  Select,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
 import { useState } from "react";
 import { z } from "zod";
-import { sURL } from "../c";
 import Loading from "../components/Loading";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import InputError from "../components/InputError";
+import http from "../services/http";
+import { sURL } from "../c";
+
+enum Mode {
+  SERIAL = "serial",
+  DISTRIBUTE = "distribute",
+  RANDOM = "random",
+}
+
+const schema = z.object({
+  emails: z.string().min(4, "Receivers email is required"),
+  subject: z.string().min(4, "Subject must be at least 4 characters"),
+  body: z.string().min(100, "Body is too short"),
+  delay: z.number(),
+  burst_mode: z.enum([Mode.DISTRIBUTE, Mode.RANDOM, Mode.SERIAL]),
+});
+
+type FormData = z.infer<typeof schema>;
 
 const New = () => {
-  const [receivers, setReceivers] = useState<string>("");
-  const [subject, setSubject] = useState<string>("");
-  const [body, setBody] = useState<string | undefined>(undefined);
-  const [delay, setDelay] = useState<number>(1000);
-  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    setValue,
+    getValues,
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
 
-  const send_email = async () => {
-    setLoading(true);
-    validateEmails(receivers);
-    const emails = receivers.split("\n");
-    try {
-      await axios.post(sURL.login, {
-        emails,
-        subject,
-        body,
-        delay,
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    const copied_data = {
+      ...data,
+      emails: validateEmails(data.emails).split("\n"),
+    };
+    http
+      .post(sURL.sendMail, JSON.stringify(copied_data), {
+        headers: { "Content-Type": "application/json" },
+      })
+      .then(() => {
+        alert("Emails are being sent");
+        // @ts-ignore
+        window.location = "/sent-mail";
+      })
+      .catch((err) => {
+        setIsSubmitting(false);
+        if (err.response && err.response.status == 400) {
+          Object.keys(err.response.data).forEach((key) => {
+            setError(key as keyof FormData, {
+              type: "custom",
+              message: err.response.data[key as keyof FormData],
+            });
+          });
+        } else {
+          alert("Something went wrong");
+        }
       });
-      alert("Emails sent");
-      window.location.reload();
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-    }
   };
 
-  const validateEmails = (emails: string) => {
+  const validateEmails = (emails: string): string => {
     const emailsArray = emails.split("\n");
     const validEmails: string[] = [];
     let invalidCount = 0;
@@ -41,65 +86,74 @@ const New = () => {
       if (res.success) validEmails.push(email);
       else invalidCount++;
     }
-    setReceivers(validEmails.join("\n"));
+    setValue("emails", validEmails.join("\n"));
     if (invalidCount > 0) {
       alert(`${invalidCount} emails are invalid`);
     }
+    return validEmails.join("\n");
   };
 
   return (
-    <Grid columns={{ initial: "1", md: "2" }} gap={"5"}>
-      <Flex direction={"column"} gap={"3"}>
-        <Box>
-          <label htmlFor="delay">Delay(in milliseconds)</label>
-          <TextField.Input
-            id="delay"
-            placeholder="Delay in milliseconds"
-            type="number"
-            value={delay}
-            onChange={(e) => setDelay(parseInt(e.target.value))}
-          />
-        </Box>
-        <Box>
-          <label htmlFor="subject">Subject</label>
-          <TextField.Input
-            id="subject"
-            placeholder="Subject"
-            type="text"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-          />
-        </Box>
-        <Box>
-          <label htmlFor="body">Body</label>
-          <TextArea
-            id="body"
-            name="email_body"
-            value={body}
-            style={{ height: "300px" }}
-            onChange={(e) => {
-              setBody(e.target.value);
-            }}
-          />
-        </Box>
-        <Button onClick={send_email}>
-          {loading ? <Loading /> : " Send Email"}
-        </Button>
-      </Flex>
-      <Flex gap={"3"} direction={"column"}>
-        <Box>
-          <label htmlFor="receivers">Receivers</label>
-          <TextArea
-            id="receivers"
-            placeholder="Receivers"
-            value={receivers}
-            style={{ height: "435px" }}
-            onChange={(e) => setReceivers(e.target.value)}
-          />
-        </Box>
-        <Button onClick={() => validateEmails(receivers)}>Validate</Button>
-      </Flex>
-    </Grid>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Grid columns={{ initial: "1", md: "2" }} gap={"5"}>
+        <Flex direction={"column"} gap={"3"}>
+          <Box>
+            <label htmlFor="delay">Delay(in milliseconds)</label>
+            <TextField.Input {...register("delay", { valueAsNumber: true })} />
+          </Box>
+          <Box>
+            <label htmlFor="subject">Subject</label>
+            <TextField.Input {...register("subject")} />
+            <InputError error={errors.subject} />
+          </Box>
+          <Box>
+            <label htmlFor="body">Body</label>
+            <TextArea style={{ height: "300px" }} {...register("body")} />
+            <InputError error={errors.body} />
+          </Box>
+          <Button type="submit">
+            {isSubmitting ? <Loading /> : " Send Email"}
+          </Button>
+        </Flex>
+        <Flex gap={"3"} direction={"column"}>
+          <Box>
+            <Select.Root
+              defaultValue=""
+              name="burst_mode"
+              onValueChange={(value) => {
+                setValue("burst_mode", value as Mode);
+                console.log(value);
+              }}
+            >
+              <Select.Trigger mt={"2"} placeholder="Select burst mode ..." />
+              <Select.Content>
+                <Select.Item value="serial">
+                  After exceeding limit of one email send from next email
+                </Select.Item>
+                <Select.Item value="distribute">
+                  1st from 1st email, 2nd from 2nd email....
+                </Select.Item>
+                <Select.Item value="random">
+                  Randomly select sender email
+                </Select.Item>
+              </Select.Content>
+            </Select.Root>
+            <InputError error={errors.burst_mode} />
+          </Box>
+          <Box>
+            <label htmlFor="receivers">Receivers</label>
+            <TextArea {...register("emails")} style={{ height: "385px" }} />
+            <InputError error={errors.emails} />
+          </Box>
+          <Button
+            type="button"
+            onClick={() => validateEmails(getValues("emails"))}
+          >
+            Validate
+          </Button>
+        </Flex>
+      </Grid>
+    </form>
   );
 };
 

@@ -15,4 +15,6 @@ export const sURL = {
   verifyToken: `${baseAPI}/users/token/verify/`,
 
   senderMail: `${baseAPI}/core/sender-mail/`,
+  sendMail: `${baseAPI}/core/send-mail/`,
+  sentMails: `${baseAPI}/core/sent-mail/`,
 };

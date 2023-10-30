@@ -1,7 +1,7 @@
 from django.core.mail import send_mail
 from rest_framework import serializers
 
-from .models import SenderMailAddress
+from .models import SenderMailAddress, ReceiverMail
 
 
 class SenderMailAddressSerializer(serializers.ModelSerializer):
@@ -27,3 +27,10 @@ class SenderMailAddressSerializer(serializers.ModelSerializer):
         except Exception as e:
             raise serializers.ValidationError({'password': str(e)})
         return attrs
+
+
+class ReceiverMailSerializer(serializers.ModelSerializer):
+    subject = serializers.CharField(source='sendible_mail.subject', read_only=True)
+    class Meta:
+        model = ReceiverMail
+        fields = '__all__'

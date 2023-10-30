@@ -4,6 +4,7 @@ import ScrollTop from "../components/ScrollTop";
 import "@radix-ui/themes/styles.css";
 import { useEffect } from "react";
 import { Box, Container } from "@radix-ui/themes";
+import Footer from "../components/Footer";
 
 const Layout = () => {
   useEffect(() => {
@@ -19,6 +20,7 @@ const Layout = () => {
       <Box mt={"2"}>
         <Outlet />
       </Box>
+      <Footer />
     </Container>
   );
 };

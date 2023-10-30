@@ -1,6 +1,19 @@
 from django.contrib import admin
 
-from .models import SenderMailAddress
+from .models import SenderMailAddress, ReceiverMail, SendibleMail
+
+admin.site.register(SendibleMail)
 
 
-admin.site.register(SenderMailAddress)
+@admin.register(ReceiverMail)
+class ReceiverMailAdmin(admin.ModelAdmin):
+    list_display = ('id', 'from_email', 'email_address', 'sent_time', 'status')
+    list_filter = ('sendible_mail', 'status')
+    search_fields = ('email_address',)
+
+
+@admin.register(SenderMailAddress)
+class SenderMailAddressAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'email', 'last_expired')
+    list_filter = ('user',)
+    search_fields = ('email',)

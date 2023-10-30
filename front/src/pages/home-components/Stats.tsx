@@ -1,30 +1,7 @@
-import { Flex, Heading, Table, Text } from "@radix-ui/themes";
+import { Flex, Heading, Table } from "@radix-ui/themes";
 
 const Stats = () => {
   return (
-    // <Flex direction={"column"}>
-    //   <Heading>Summary</Heading>
-    //   <Text>
-    //     <Text weight={"bold"}>Total sent: </Text>
-    //     400
-    //   </Text>
-    //   <Text>
-    //     <Text weight={"bold"}>Total Delivered: </Text>
-    //     400
-    //   </Text>
-    //   <Text>
-    //     <Text weight={"bold"}>Total Pending: </Text>
-    //     400
-    //   </Text>
-    //   <Text>
-    //     <Text weight={"bold"}>Total template: </Text>
-    //     400
-    //   </Text>
-    //   <Text>
-    //     <Text weight={"bold"}>API key: </Text>
-    //     400
-    //   </Text>
-    // </Flex>
     <Flex direction={"column"} gap={"3"}>
       <Heading align={"center"}>User Stats</Heading>
       <Table.Root variant="surface" size={"1"}>
