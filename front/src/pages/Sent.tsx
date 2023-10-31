@@ -5,7 +5,7 @@ import useModels from "../services/useModels";
 import { sURL } from "../c";
 import Loading from "../components/Loading";
 
-interface ISentMail {
+export interface ISentMail {
   id: number;
   from_email: string;
   email_address: string;
@@ -63,29 +63,38 @@ const Sent = () => {
 
 export default Sent;
 
-const readableDateTime = (dateString: string) => {
+export const readableDateTime = (dateString: string) => {
   const date = new Date(dateString);
   const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
     "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
   const year = date.getFullYear();
   const month = monthNames[date.getMonth()];
-  const day = date.getDate();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const amOrPm = hours >= 12 ? "PM" : "AM";
-  const formattedHours = hours % 12 || 12;
+  const day =
+    date.getDate() < 10
+      ? "0" + date.getDate().toString()
+      : date.getDate().toString();
+  const hours =
+    date.getHours() < 10
+      ? "0" + date.getHours().toString()
+      : date.getHours().toString();
+  const minutes =
+    date.getMinutes() < 10
+      ? "0" + date.getMinutes().toString()
+      : date.getMinutes().toString();
+  const amOrPm = parseInt(hours) >= 12 ? "PM" : "AM";
+  const formattedHours = parseInt(hours) % 12 || 12;
   const formattedDateTime = `${month} ${day}, ${year} ${formattedHours}:${minutes} ${amOrPm}`;
   return formattedDateTime;
 };

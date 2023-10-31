@@ -1,17 +1,27 @@
 import { Button, Flex } from "@radix-ui/themes";
 import TextEditor from "../components/TextEditor";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const Editor = () => {
-  const [value, setValue] = useState<string>();
+  const [value, setValue] = useState<string>("");
+  useEffect(() => {
+    const editor = localStorage.getItem("editor");
+    if (editor) setValue(editor || "<p><br></p>");
+  }, []);
+
   return (
     <Flex direction={"column"}>
-      <TextEditor
-        label="Editor"
-        name="editor"
-        onChange={setValue}
-        value={value}
-      />
+      {value && (
+        <TextEditor
+          label="Editor"
+          name="editor"
+          onChange={(value) => {
+            localStorage.setItem("editor", value);
+            setValue(value);
+          }}
+          value={value}
+        />
+      )}
       <Button
         className="cursor-pointer"
         onClick={() => {

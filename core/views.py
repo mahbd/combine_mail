@@ -89,7 +89,6 @@ def send_mass_mail(request: Request):
     body = data.get('body')
     burst_mode = data.get('burst_mode')
     emails = data.get('emails')
-    print(emails)
     delay = data.get('delay')
     if not subject:
         return Response(status=400, data={'subject': 'Subject is required'})
@@ -153,3 +152,25 @@ class ReceiverMailViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return ReceiverMail.objects.filter(sendible_mail__user=user)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_stats(request: Request):
+    user = request.user
+    total_delivered = ReceiverMail.objects.filter(
+        sendible_mail__user=user,
+        status=ReceiverMail.MAIL_STATUS_DELIVERED).count()
+    total_sent = ReceiverMail.objects.filter(
+        sendible_mail__user=user,
+        status=ReceiverMail.MAIL_STATUS_SENT).count()
+    total_pending = ReceiverMail.objects.filter(
+        sendible_mail__user=user,
+        status=ReceiverMail.MAIL_STATUS_PENDING).count()
+    return Response({
+        'sent_count': total_sent + total_delivered,
+        'pending_count': total_pending,
+        'delivered_count': total_delivered,
+        'template_count': SendibleMail.objects.filter(user=user).count(),
+        'sender_count': SenderMailAddress.objects.filter(user=user).count(),
+    }, status=200)

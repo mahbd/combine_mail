@@ -31,6 +31,7 @@ class SenderMailAddressSerializer(serializers.ModelSerializer):
 
 class ReceiverMailSerializer(serializers.ModelSerializer):
     subject = serializers.CharField(source='sendible_mail.subject', read_only=True)
+
     class Meta:
         model = ReceiverMail
         fields = '__all__'

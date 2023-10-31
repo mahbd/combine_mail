@@ -44,7 +44,7 @@ const NewSenderEmail = () => {
       })
       .catch((err) => {
         if (err.response && err.response.status == 400) {
-          Object.keys(FormData).forEach((key) => {
+          Object.keys(err.response.data).forEach((key) => {
             setError(key as keyof FormData, {
               type: "custom",
               message: err.response.data[key as keyof FormData],

@@ -1,5 +1,4 @@
 import json
-import time
 
 from django.test import TestCase
 from django.urls import reverse
@@ -7,7 +6,7 @@ from model_bakery import baker
 from rest_framework.test import APIClient
 
 from users.models import User
-from .models import SenderMailAddress, ReceiverMail
+from .models import SenderMailAddress, ReceiverMail, SendibleMail
 
 client = APIClient()
 
@@ -95,6 +94,29 @@ class SendibleMailTest(TestCase):
             "delay": 10,
         }), content_type="application/json")
         self.assertEqual(res.status_code, 201, res.content)
-        time.sleep(5)
         self.assertEqual(ReceiverMail.objects.filter(sendible_mail__user=self.user).count(), 3)
+        client.logout()
+
+
+class OtherTest(TestCase):
+    def setUp(self) -> None:
+        self.user = baker.make(User)
+        self.user2 = baker.make(User)
+        baker.make(SenderMailAddress, user=self.user, _quantity=10)
+        baker.make(SenderMailAddress, user=self.user2, _quantity=5)
+        sm = baker.make(SendibleMail, user=self.user, _quantity=5)
+        sm2 = baker.make(SendibleMail, user=self.user2, _quantity=4)
+        for s in sm:
+            baker.make(ReceiverMail, sendible_mail=s, _quantity=10)
+        for s in sm2:
+            baker.make(ReceiverMail, sendible_mail=s, _quantity=8)
+
+    def test_get_stats(self):
+        client.force_authenticate(user=self.user)
+        res = client.get(reverse("core:user_stats"))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["sent_count"], 0)
+        self.assertEqual(res.json()["delivered_count"], 0)
+        self.assertEqual(res.json()["template_count"], 5)
+        self.assertEqual(res.json()["sender_count"], 10)
         client.logout()

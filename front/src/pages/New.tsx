@@ -125,7 +125,7 @@ const New = () => {
                 console.log(value);
               }}
             >
-              <Select.Trigger mt={"2"} placeholder="Select burst mode ..." />
+              <Select.Trigger mt={"5"} placeholder="Select burst mode ..." />
               <Select.Content>
                 <Select.Item value="serial">
                   After exceeding limit of one email send from next email
@@ -142,7 +142,7 @@ const New = () => {
           </Box>
           <Box>
             <label htmlFor="receivers">Receivers</label>
-            <TextArea {...register("emails")} style={{ height: "385px" }} />
+            <TextArea {...register("emails")} style={{ height: "368px" }} />
             <InputError error={errors.emails} />
           </Box>
           <Button

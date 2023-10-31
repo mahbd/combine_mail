@@ -17,4 +17,5 @@ export const sURL = {
   senderMail: `${baseAPI}/core/sender-mail/`,
   sendMail: `${baseAPI}/core/send-mail/`,
   sentMails: `${baseAPI}/core/sent-mail/`,
+  userStats: `${baseAPI}/core/user-stats/`,
 };

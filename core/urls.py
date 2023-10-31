@@ -11,4 +11,5 @@ router.register('sent-mail', views.ReceiverMailViewSet, basename='sent-mail')
 urlpatterns = [
     path('', include(router.urls)),
     path('send-mail/', views.send_mass_mail, name='send_mail'),
+    path('user-stats/', views.user_stats, name='user_stats'),
 ]
