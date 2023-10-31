@@ -14,6 +14,8 @@ import { sURL } from "../../c";
 import InputError from "../../components/InputError";
 import http from "../../services/http";
 import PasswordField from "../../auth/PasswordField";
+import { useState } from "react";
+import Loading from "../../components/Loading";
 
 const schema = z.object({
   email: z
@@ -29,16 +31,18 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const NewSenderEmail = () => {
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     setError,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
   const onSubmit = (data: FormData) => {
+    setIsSubmitting(true);
     http
       .post(sURL.senderMail, data)
       .then(() => {
@@ -46,6 +50,7 @@ const NewSenderEmail = () => {
         window.location = "/";
       })
       .catch((err) => {
+        setIsSubmitting(false);
         if (err.response && err.response.status == 400) {
           Object.keys(err.response.data).forEach((key) => {
             setError(key as keyof FormData, {
@@ -75,7 +80,7 @@ const NewSenderEmail = () => {
             <InputError error={errors.password} />
           </Box>
           <Button type="submit" disabled={isSubmitting}>
-            Add New Email
+            {isSubmitting ? <Loading /> : " Add New Email"}
           </Button>
         </Flex>
       </Card>
