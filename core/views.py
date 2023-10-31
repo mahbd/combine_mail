@@ -66,8 +66,7 @@ def send_next_email(user_id, job_id):
         sent_time__isnull=True,
         status=ReceiverMail.MAIL_STATUS_PENDING).first()
     if not receiver_mail:
-        periodic_task = PeriodicTask.objects.get(name=job_id)
-        periodic_task.delete()
+        PeriodicTask.objects.filter(name=job_id).delete()
         return
     receiver_mail.status = ReceiverMail.MAIL_STATUS_SENDING
     receiver_mail.save()
@@ -77,8 +76,7 @@ def send_next_email(user_id, job_id):
     else:
         receiver_mail.status = ReceiverMail.MAIL_STATUS_PENDING
         receiver_mail.save()
-        periodic_task = PeriodicTask.objects.get(name=job_id)
-        periodic_task.delete()
+        PeriodicTask.objects.filter(name=job_id).delete()
 
 
 @api_view(['POST'])
