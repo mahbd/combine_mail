@@ -6,7 +6,8 @@ const Editor = () => {
   const [value, setValue] = useState<string>("");
   useEffect(() => {
     const editor = localStorage.getItem("editor");
-    if (!editor) setValue(editor || "<p><br></p>");
+    if (!editor) setValue("<p><br></p>");
+    else setValue(editor);
   }, []);
 
   return (
