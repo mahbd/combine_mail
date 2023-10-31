@@ -8,9 +8,10 @@ import { useState } from "react";
 interface Props {
   register: UseFormRegisterReturn;
   id: string;
+  autoComplete?: string;
 }
 
-const PasswordField = ({ register, id }: Props) => {
+const PasswordField = ({ register, id, autoComplete }: Props) => {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -19,6 +20,7 @@ const PasswordField = ({ register, id }: Props) => {
         {...register}
         type={showPassword ? "text" : "password"}
         id={id}
+        autoComplete={autoComplete}
       />
       <TextField.Slot
         onClick={() => {

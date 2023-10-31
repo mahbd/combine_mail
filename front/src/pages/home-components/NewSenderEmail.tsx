@@ -70,13 +70,21 @@ const NewSenderEmail = () => {
           <Box>
             <Text>Email</Text>
             <TextField.Root>
-              <TextField.Input {...register("email")} type="email" />
+              <TextField.Input
+                {...register("email")}
+                type="email"
+                autoComplete="new-password"
+              />
             </TextField.Root>
             <InputError error={errors.email} />
           </Box>
           <Box>
             <Text>App Password</Text>
-            <PasswordField register={register("password")} id="app-password" />
+            <PasswordField
+              register={register("password")}
+              id="app-password"
+              autoComplete="new-password"
+            />
             <InputError error={errors.password} />
           </Box>
           <Button type="submit" disabled={isSubmitting}>
