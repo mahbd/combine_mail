@@ -1,0 +1,12 @@
+celery==5.3.*
+Django==4.2.*
+mysqlclient
+django-celery-beat==2.5.*
+django-cors-headers==4.3.*
+django-redis==5.4.*
+djangorestframework==3.14.*
+djangorestframework-simplejwt==5.3.*
+model-bakery==1.17.*
+sqlparse==0.4.4
+twisted[http2,tls]
+gunicorn

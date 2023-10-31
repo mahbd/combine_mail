@@ -16,7 +16,10 @@ import http from "../../services/http";
 import PasswordField from "../../auth/PasswordField";
 
 const schema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .endsWith("@gmail.com", "Only Gmail is supported"),
   password: z
     .string()
     .min(16, "App Password must be at least 16 characters")
