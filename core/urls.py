@@ -10,6 +10,7 @@ router.register('sent-mail', views.ReceiverMailViewSet, basename='sent-mail')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('send-single-mail/', views.send_mail, name='send_single_mail'),
     path('send-mail/', views.send_mass_mail, name='send_mail'),
     path('user-stats/', views.user_stats, name='user_stats'),
 ]

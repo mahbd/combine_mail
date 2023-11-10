@@ -53,6 +53,7 @@ def send_email_celery(receiver_mail: ReceiverMail):
         if 'Daily user sending quota exceeded' in str(e):
             sender_mail.last_expired = timezone.now() + timezone.timedelta(minutes=sender_mail.refresh_time)
             sender_mail.save()
+            return send_email_celery(receiver_mail)
     except Exception as e:
         create_log(str(e))
         return False
@@ -76,6 +77,24 @@ def send_next_email(user_id, job_id):
     else:
         receiver_mail.status = ReceiverMail.MAIL_STATUS_FAILED
         receiver_mail.save()
+
+
+@shared_task
+def retry_failed_mails():
+    for user in User.objects.all():
+        count = ReceiverMail.objects.filter(
+            sendible_mail__user_id=user.id,
+            sent_time__isnull=True,
+            status=ReceiverMail.MAIL_STATUS_FAILED).count()
+        if count > 0:
+            mails = ReceiverMail.objects.filter(
+                sendible_mail__user_id=user.id,
+                sent_time__isnull=True,
+                status=ReceiverMail.MAIL_STATUS_FAILED).update(status=ReceiverMail.MAIL_STATUS_PENDING)
+            if not PeriodicTask.objects.filter(name=str(mails[0].sendible_mail.id)).exists():
+                main_email = mails[0].sendible_mail
+                schedule_mail_task(5, main_email)
+    return True
 
 
 @api_view(['POST'])
@@ -117,19 +136,38 @@ def send_mass_mail(request: Request):
         receiver_mail.sendible_mail = main_email
         receiver_mail.email_address = email
         bulk_create.append(receiver_mail)
+    bulk_create.reverse()
     ReceiverMail.objects.bulk_create(bulk_create)
 
+    schedule_mail_task(delay, main_email)
+
+    return Response(status=201, data={'message': 'Emails are being sent'})
+
+
+def schedule_mail_task(delay, main_email):
     schedule, created = IntervalSchedule.objects.get_or_create(every=delay, period=IntervalSchedule.SECONDS)
     periodic_task = PeriodicTask()
     periodic_task.interval = schedule
     periodic_task.name = f'{main_email.id}'
     periodic_task.task = 'core.views.send_next_email'
-    periodic_task.args = json.dumps([request.user.id, main_email.id])
-    periodic_task.expires = timezone.now() + timezone.timedelta(hours=1)
+    periodic_task.args = json.dumps([main_email.user.id, main_email.id])
     periodic_task.save()
     PeriodicTasks.update_changed()
 
-    return Response(status=201, data={'message': 'Emails are being sent'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_mail(request: Request):
+    data = request.data
+    subject = data.get('subject')
+    body = data.get('body')
+    email = data.get('email')
+    if not subject or not body or not email:
+        return Response(status=400, data={'message': 'subject, body and email are required'})
+    sendible_mail = SendibleMail.objects.create(user=request.user, subject=subject, body=body)
+    ReceiverMail.objects.create(sendible_mail=sendible_mail, email_address=email)
+    schedule_mail_task(5, sendible_mail)
+    return Response(status=201, data={'message': 'Email is being sent'})
 
 
 class SenderMailViewSet(viewsets.ModelViewSet):
@@ -148,7 +186,7 @@ class ReceiverMailViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return ReceiverMail.objects.filter(sendible_mail__user=user)
+        return ReceiverMail.objects.filter(sendible_mail__user=user).order_by('-sent_time')
 
 
 @api_view(['GET'])
