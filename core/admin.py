@@ -7,12 +7,13 @@ admin.site.register(SendibleMail)
 
 @admin.register(ReceiverMail)
 class ReceiverMailAdmin(admin.ModelAdmin):
+    actions = ['mark_as_pending']
     list_display = ('id', 'from_email', 'email_address', 'sent_time', 'status')
     list_filter = ('sendible_mail', 'status')
     search_fields = ('email_address',)
 
     @admin.action(description="Mark as pending")
-    def mark_as_sent(self, request, queryset):
+    def mark_as_pending(self, request, queryset):
         queryset.update(status=ReceiverMail.MAIL_STATUS_PENDING)
         self.message_user(request, "Marked as pending")
 
