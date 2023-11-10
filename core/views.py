@@ -74,9 +74,8 @@ def send_next_email(user_id, job_id):
         user.sent_count += 1
         user.save()
     else:
-        receiver_mail.status = ReceiverMail.MAIL_STATUS_PENDING
+        receiver_mail.status = ReceiverMail.MAIL_STATUS_FAILED
         receiver_mail.save()
-        PeriodicTask.objects.filter(name=job_id).delete()
 
 
 @api_view(['POST'])
@@ -165,10 +164,14 @@ def user_stats(request: Request):
     total_pending = ReceiverMail.objects.filter(
         sendible_mail__user=user,
         status=ReceiverMail.MAIL_STATUS_PENDING).count()
+    total_failed = ReceiverMail.objects.filter(
+        sendible_mail__user=user,
+        status=ReceiverMail.MAIL_STATUS_FAILED).count()
     return Response({
         'sent_count': total_sent + total_delivered,
         'pending_count': total_pending,
         'delivered_count': total_delivered,
+        'failed_count': total_failed,
         'template_count': SendibleMail.objects.filter(user=user).count(),
         'sender_count': SenderMailAddress.objects.filter(user=user).count(),
     }, status=200)

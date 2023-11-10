@@ -8,6 +8,7 @@ interface IStats {
   delivered_count: number;
   template_count: number;
   sender_count: number;
+  failed_count: number;
 }
 
 const Stats = () => {
@@ -28,6 +29,10 @@ const Stats = () => {
           <Table.Row>
             <Table.ColumnHeaderCell>Total Pending</Table.ColumnHeaderCell>
             <Table.Cell>{stats?.pending_count}</Table.Cell>
+          </Table.Row>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Total Failed</Table.ColumnHeaderCell>
+            <Table.Cell>{stats?.failed_count}</Table.Cell>
           </Table.Row>
           <Table.Row>
             <Table.ColumnHeaderCell>Total template</Table.ColumnHeaderCell>
