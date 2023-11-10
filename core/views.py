@@ -19,7 +19,7 @@ from core.serializers import SenderMailAddressSerializer, ReceiverMailSerializer
 from users.models import User
 
 
-def send_email_celery(receiver_mail: ReceiverMail):
+def send_email_celery(receiver_mail: ReceiverMail) -> bool:
     valid_mail_q = Q(last_expired__lt=timezone.now()) | Q(last_expired__isnull=True)
     mail = receiver_mail.sendible_mail
     if mail.burst_mode == SendibleMail.BURST_MODE_SERIAL:
@@ -157,7 +157,7 @@ def schedule_mail_task(delay, main_email):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def send_mail(request: Request):
+def send_mail_api(request: Request):
     data = request.data
     subject = data.get('subject')
     body = data.get('body')
