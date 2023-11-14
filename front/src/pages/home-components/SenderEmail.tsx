@@ -10,6 +10,7 @@ interface ISenderMail {
   password: string;
   refresh_time: number;
   last_expired?: string;
+  rejected?: boolean;
 }
 
 const SenderEmail = () => {
@@ -34,7 +35,10 @@ const SenderEmail = () => {
             <Table.Row key={senderMail.id}>
               <Table.Cell>{senderMail.email}</Table.Cell>
               <Table.Cell>
-                <StatusBadge last_expire={senderMail.last_expired} />{" "}
+                <StatusBadge
+                  last_expire={senderMail.last_expired}
+                  rejected={senderMail.rejected}
+                />{" "}
               </Table.Cell>
               <Table.Cell>
                 <DeleteSenderMail Id={senderMail.id} />
@@ -49,9 +53,14 @@ const SenderEmail = () => {
 
 export default SenderEmail;
 
-const StatusBadge = ({ last_expire }: { last_expire: string | undefined }) => {
+interface StatusBadgeProps {
+  last_expire: string | undefined;
+  rejected: boolean | undefined;
+}
+
+const StatusBadge = ({ last_expire, rejected }: StatusBadgeProps) => {
+  if (rejected) return <Badge color="red">Rejected</Badge>;
   if (!last_expire) return <Badge color="green">Active</Badge>;
-  // 2023-10-30T18:00:00+06:00  convert this to datetime
   const last_expire_date = new Date(last_expire);
   const now = new Date();
   if (last_expire_date > now) return <Badge color="red">Inactive</Badge>;

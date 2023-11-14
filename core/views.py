@@ -20,14 +20,14 @@ from users.models import User
 
 
 def send_email_celery(receiver_mail: ReceiverMail) -> bool:
-    valid_mail_q = Q(last_expired__lt=timezone.now()) | Q(last_expired__isnull=True)
+    valid_mail_q = (Q(last_expired__lt=timezone.now()) | Q(last_expired__isnull=True)) & Q(rejected=False)
     mail = receiver_mail.sendible_mail
+    mail_count = mail.user.sendermailaddress_set.filter(valid_mail_q).count()
+    if mail_count == 0:
+        return False
     if mail.burst_mode == SendibleMail.BURST_MODE_SERIAL:
         sender_mail: SenderMailAddress = mail.user.sendermailaddress_set.filter(valid_mail_q).first()
     elif mail.burst_mode == SendibleMail.BURST_MODE_DISTRIBUTE:
-        mail_count = mail.user.sendermailaddress_set.filter(valid_mail_q).count()
-        if mail_count == 0:
-            return False
         sent_count = mail.user.sent_count
         sender_mail: SenderMailAddress = mail.user.sendermailaddress_set.filter(valid_mail_q)[
             sent_count % mail_count]
@@ -54,9 +54,21 @@ def send_email_celery(receiver_mail: ReceiverMail) -> bool:
             sender_mail.last_expired = timezone.now() + timezone.timedelta(minutes=sender_mail.refresh_time)
             sender_mail.save()
             return send_email_celery(receiver_mail)
+        elif 'Please log in with your web browser and then try again' in str(e):
+            sender_mail.rejected = True
+            sender_mail.save()
+            return send_email_celery(receiver_mail)
+        else:
+            create_log(str(e))
+            return False
     except Exception as e:
-        create_log(str(e))
-        return False
+        if 'Please log in with your web browser and then try again' in str(e):
+            sender_mail.rejected = True
+            sender_mail.save()
+            return send_email_celery(receiver_mail)
+        else:
+            create_log(str(e))
+            return False
 
 
 @shared_task
