@@ -50,7 +50,7 @@ def send_email_celery(receiver_mail: ReceiverMail) -> bool:
         receiver_mail.save()
         return True
     except SMTPDataError as e:
-        if 'Daily user sending quota exceeded' in str(e):
+        if 'Daily user sending quota exceeded' in str(e) or 'Daily user sending limit exceeded' in str(e):
             sender_mail.last_expired = timezone.now() + timezone.timedelta(minutes=sender_mail.refresh_time)
             sender_mail.save()
             return send_email_celery(receiver_mail)
